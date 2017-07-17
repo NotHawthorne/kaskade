@@ -35,6 +35,14 @@ class magnetResult(object):
         self.seeds = 0
         self.leechers = 0
 
+#Strip array of 0-seeder entries
+def removeNullSeeds(resultArray):
+    outArray = []
+    for x in range(0, len(resultArray)):
+        if (int(resultArray[x].seeds) > 0):
+            outArray.append(resultArray[x])
+    return outArray
+
 #Download Torrent
 def torrentDownload(magnet):
     ses = lt.session()
@@ -65,7 +73,6 @@ def tpbSearch(searchString):
     print(len(torrentResults))
 
     for x in range(0, len(torrentResults)):
-        #print(torrentResults[x]+'|'+torrentLinks[x])
         returnMagnet = magnetResult()
         returnMagnet.name = torrentResults[x].replace('Details for ','')
         returnMagnet.link = torrentLinks[x]
@@ -104,6 +111,8 @@ if(len(sys.argv)>=2):
     for x in range(0, len(searchResults)):
         for y in range(0, len(searchResults[x])):
             outResults.append(searchResults[x][y])
+
+    outResults = removeNullSeeds(outResults)
 
     for x in range(0, len(outResults)):
         print(tcBld+str(x)+tcEnd+') ' + outResults[x].name+tcGrn+' '+outResults[x].seeds+tcEnd+'|'+tcRed+outResults[x].leechers+tcEnd)
