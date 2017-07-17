@@ -41,7 +41,8 @@ def removeNullSeeds(resultArray):
     for x in range(0, len(resultArray)):
         if (int(resultArray[x].seeds) > 0):
             outArray.append(resultArray[x])
-    return outArray
+    sortArray = sorted(outArray, key=lambda x: x[2])
+    return sortArray
 
 #Download Torrent
 def torrentDownload(magnet):
