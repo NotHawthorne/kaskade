@@ -1,11 +1,11 @@
-#kfind
+# kaskade
 Searches popular torrent sites and downloads to your Downloads folder.
-##Requirements
+## Requirements
 ```
 libtorrent-rasterbar
 lxml2
 ```
-##Usage
+## Usage
 ```
-python kfind.py searchterm -tpb
+python kaskade.py searchterm -tpb
 ```
