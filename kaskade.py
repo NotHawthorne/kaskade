@@ -26,6 +26,7 @@ class searchConfig(object):
         self.searchTorrentz2 = False
         self.searchTorrentproject = False
         self.searchZooqle = False
+        self.searchNyaa = False
 
 #Magnet Result class
 class magnetResult(object):
@@ -41,8 +42,8 @@ def removeNullSeeds(resultArray):
     for x in range(0, len(resultArray)):
         if (int(resultArray[x].seeds) > 0):
             outArray.append(resultArray[x])
-    sortArray = sorted(outArray, key=lambda x: x[2])
-    return sortArray
+    #sortArray = sorted(outArray, key=lambda x: x[2])
+    return outArray
 
 #Download Torrent
 def torrentDownload(magnet):
@@ -61,7 +62,6 @@ def torrentDownload(magnet):
 
 #Search ThePirateBay
 def tpbSearch(searchString):
-    #Format string for search
     #Load page
     page = requests.get('https://thepiratebay.org/search/' + searchString + '/0/99/0')
     tree = html.fromstring(page.content)
@@ -88,6 +88,28 @@ def tpbSearch(searchString):
             curIt += 1
     return result;
 
+#Search NyaaPantsu
+def nyaaSearch(searchString):
+    #Load page
+    page = requests.get('https://nyaa.pantsu.cat/search?c=_&s=0&limit=50&order=false&q='+searchString+'&s=0&sort=5&userID=0')
+    tree = html.fromstring(page.content)
+    result = []
+
+    torrentResults = tree.xpath('//td[@class="tr-name home-td"]/a/text()')
+    torrentLinks = tree.xpath('//a[@title="Magnet Link"]/@href')
+    seeds = tree.xpath('//td[@class="tr-se home-td hide-xs"]/text()')
+    leeches = tree.xpath('//td[@class="tr-le home-td hide-xs"]/text()')
+    
+    for x in range(0, len(torrentResults)):
+        returnMagnet = magnetResult()
+        returnMagnet.name = torrentResults[x].strip()
+        returnMagnet.link = torrentLinks[x].strip()
+        returnMagnet.seeds = int(seeds[x])
+        returnMagnet.leeches = int(leeches[x])
+        result.append(returnMagnet)
+
+    return result;
+
 #Main function
 if(len(sys.argv)>=2):
     searchString = sys.argv[1]
@@ -100,14 +122,16 @@ if(len(sys.argv)>=2):
         for x in range(0, len(sys.argv)-2):
             if(sys.argv[x+2]=="-tpb"):
                 conf.searchTpb = True
-            elif(sys.argv[x+2]=="-1337"):
-                conf.search1337x = True
+            elif(sys.argv[x+2]=="-nyaa"):
+                conf.searchNyaa = True
             else:
                 print('Invalid argument "'+sys.argv[x+2]+'"... ignoring.')
     
     #Search all websites
     if (conf.searchTpb==True):
         searchResults.append(tpbSearch(searchString))
+    if (conf.searchNyaa==True):
+        searchResults.append(nyaaSearch(searchString))
 
     for x in range(0, len(searchResults)):
         for y in range(0, len(searchResults[x])):
@@ -116,7 +140,9 @@ if(len(sys.argv)>=2):
     outResults = removeNullSeeds(outResults)
 
     for x in range(0, len(outResults)):
-        print(tcBld+str(x)+tcEnd+') ' + outResults[x].name+tcGrn+' '+outResults[x].seeds+tcEnd+'|'+tcRed+outResults[x].leechers+tcEnd)
+        outputString = tcBld+str(x)+tcEnd+') '+outResults[x].name+tcGrn+' '+str(outResults[x].seeds)+tcEnd+'|'+tcRed+str(outResults[x].leechers)+tcEnd
+        outputString.replace("\n", "")
+        print(outputString)
     torrentSelection = input('Select a torrent(0-'+str(len(outResults)-1)+'):')
     print(tcGrn+'Downloading "'+outResults[int(torrentSelection)].name+'"...'+tcEnd)
     torrentDownload(outResults[int(torrentSelection)].link)
