@@ -52,18 +52,22 @@ def torrentDownload(magnet):
 
 #Search ThePirateBay
 def tpbSearch(searchString):
+    #Format string for search
     #Load page
     page = requests.get('https://thepiratebay.org/search/' + searchString + '/0/99/0')
     tree = html.fromstring(page.content)
     result = []
 
-    torrentResults = tree.xpath('//a[@class="detLink"]/text()')
+    torrentResults = tree.xpath('//a[@class="detLink"]/@title')
     torrentLinks = tree.xpath('//a[@title="Download this torrent using magnet"]/@href')
     seedsLeeches = tree.xpath('//td[@align="right"]/text()')
 
+    print(len(torrentResults))
+
     for x in range(0, len(torrentResults)):
+        #print(torrentResults[x]+'|'+torrentLinks[x])
         returnMagnet = magnetResult()
-        returnMagnet.name = torrentResults[x]
+        returnMagnet.name = torrentResults[x].replace('Details for ','')
         returnMagnet.link = torrentLinks[x]
         result.append(returnMagnet)
 
