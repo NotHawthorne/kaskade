@@ -6,6 +6,12 @@ import libtorrent as lt
 import time
 import getpass
 
+#Terminal output colors
+tcRed = '\033[91m'
+tcGrn = '\033[94m'
+tcBld = '\033[1m'
+tcEnd = '\033[0m'
+
 #Config class
 class searchConfig(object):
     def __init__(self):
@@ -21,13 +27,13 @@ class searchConfig(object):
         self.searchTorrentproject = False
         self.searchZooqle = False
 
-#Search Result class
-class searchResult(object):
+#Magnet Result class
+class magnetResult(object):
     def __init__(self):
-        self.torrents = []
-        self.links = []
-        self.seeds = []
-        self.leechers = []
+        self.name = ''
+        self.link = ''
+        self.seeds = 0
+        self.leechers = 0
 
 #Download Torrent
 def torrentDownload(magnet):
@@ -49,24 +55,32 @@ def tpbSearch(searchString):
     #Load page
     page = requests.get('https://thepiratebay.org/search/' + searchString + '/0/99/0')
     tree = html.fromstring(page.content)
-    
-    result = searchResult()
-    result.torrents = tree.xpath('//a[@class="detLink"]/text()')
-    result.links = tree.xpath('//a[@title="Download this torrent using magnet"]/@href')
+    result = []
 
+    torrentResults = tree.xpath('//a[@class="detLink"]/text()')
+    torrentLinks = tree.xpath('//a[@title="Download this torrent using magnet"]/@href')
     seedsLeeches = tree.xpath('//td[@align="right"]/text()')
+
+    for x in range(0, len(torrentResults)):
+        returnMagnet = magnetResult()
+        returnMagnet.name = torrentResults[x]
+        returnMagnet.link = torrentLinks[x]
+        result.append(returnMagnet)
+
+    curIt = 0
     for x in range(0, len(seedsLeeches)):
         if (x % 2 == 0):
-            result.seeds.append(seedsLeeches[x])
+            result[curIt].seeds = seedsLeeches[curIt]
         else:
-            result.leechers.append(seedsLeeches[x])
+            result[curIt].leechers = seedsLeeches[curIt]
+            curIt += 1
     return result;
 
 #Main function
 if(len(sys.argv)>=2):
     searchString = sys.argv[1]
     searchResults = []
-    outResults = searchResult()
+    outResults = []
     sitesToSearch = []
     conf = searchConfig()
 
@@ -84,16 +98,13 @@ if(len(sys.argv)>=2):
         searchResults.append(tpbSearch(searchString))
 
     for x in range(0, len(searchResults)):
-        for y in range(0, len(searchResults[x].torrents)):
-            outResults.torrents.append(searchResults[x].torrents[y])
-            outResults.links.append(searchResults[x].links[y])
-            outResults.seeds.append(searchResults[x].seeds[y])
-            outResults.leechers.append(searchResults[x].leechers[y])
+        for y in range(0, len(searchResults[x])):
+            outResults.append(searchResults[x][y])
 
-    for x in range(0, len(outResults.torrents)):
-        print('\033[1m'+str(x) + '\033[0m) ' + outResults.torrents[x] + '\033[94m '+outResults.seeds[x]+'\033[0m|\033[91m'+outResults.leechers[x]+'\033[0m')
-    torrentSelection = input('Select a torrent(0-'+str(len(outResults.torrents)-1)+'):')
-    print('Downloading "'+outResults.torrents[int(torrentSelection)]+'"...')
-    torrentDownload(outResults.links[int(torrentSelection)])
+    for x in range(0, len(outResults)):
+        print(tcBld+str(x)+tcEnd+') ' + outResults[x].name+tcGrn+' '+outResults[x].seeds+tcEnd+'|'+tcRed+outResults[x].leechers+tcEnd)
+    torrentSelection = input('Select a torrent(0-'+str(len(outResults)-1)+'):')
+    print(tcGrn+'Downloading "'+outResults[int(torrentSelection)].name+'"...'+tcEnd)
+    torrentDownload(outResults[int(torrentSelection)].link)
 else:
     print('invalid args!')
