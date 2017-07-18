@@ -35,6 +35,22 @@ class searchConfig(object):
         self.searchDemonoid = False
         self.maxResults = 100
 
+    def allTrue(self):
+        self.searchTpb = True
+        self.search1337x = True
+        self.searchKatcr = True
+        self.searchLimetorrents = True
+        self.searchRARBG = True
+        self.searchRutracker =True
+        self.searchSkytorrents =True
+        self.searchToorgle = True
+        self.searchTorrentz2 = True
+        self.searchTorrentproject = True
+        self.searchZooqle = True
+        self.searchNyaa = True
+        self.searchSukebei=True
+        self.searchDemonoid = True
+
 #Magnet Result class
 class magnetResult(object):
     def __init__(self):
@@ -195,6 +211,8 @@ if(len(sys.argv)>=2):
                 conf.searchSukebei = True
             elif("-max" in sys.argv[x+2]):
                 conf.maxResults = int(sys.argv[x+2].replace("-max=", ""))
+            elif(sys.argv[x+2]=="-all"):
+                conf.allTrue()
             else:
                 print('Invalid argument "'+sys.argv[x+2]+'"... ignoring.')
     
