@@ -12,6 +12,9 @@ tcRed = '\033[91m'
 tcGrn = '\033[94m'
 tcBld = '\033[1m'
 tcEnd = '\033[0m'
+tcPnk = '\033[35m'
+tcBlu = '\033[34m'
+tcYlw = '\033[33m'
 
 #Config class
 class searchConfig(object):
@@ -28,7 +31,8 @@ class searchConfig(object):
         self.searchTorrentproject = False
         self.searchZooqle = False
         self.searchNyaa = False
-        self.maxResults = 0
+        self.searchDemonoid = False
+        self.maxResults = 100
 
 #Magnet Result class
 class magnetResult(object):
@@ -64,6 +68,7 @@ def torrentDownload(magnet):
 
 #Search ThePirateBay
 def tpbSearch(searchString):
+    print(tcYlw+'Searching ThePirateBay...'+tcEnd)
     #Load page
     page = requests.get('https://thepiratebay.org/search/' + searchString + '/0/99/0')
     tree = html.fromstring(page.content)
@@ -82,14 +87,43 @@ def tpbSearch(searchString):
     curIt = 0
     for x in range(0, len(seedsLeeches)):
         if (x % 2 == 0):
-            result[curIt].seeds = int(seedsLeeches[curIt])
+            result[curIt].seeds = int(seedsLeeches[x])
         else:
-            result[curIt].leechers = int(seedsLeeches[curIt])
+            result[curIt].leechers = int(seedsLeeches[x])
             curIt += 1
+    return result;
+
+#Search Demonoid
+def demonoidSearch(searchString):
+    print(tcBlu+'Searching demonoid.pw...'+tcEnd)
+    #Load page
+    page = requests.get('https://www.demonoid.pw/files/?category=0&subcategory=All&quality=All&seeded=2&external=2&query='+searchString+'&uid=0&sort=S')
+    tree = html.fromstring(page.content)
+    result = []
+
+    torrentResults = tree.xpath('//td[@class="tone_1_pad"]/a/text()')
+    torrentResults2 = tree.xpath('//td[@class="tone_3_pad"]/a/text()')
+    torrentLinks = tree.xpath('//a[img[@title="Download as magnet"]]/@href')
+    seeds = tree.xpath('//font[@class="green"]/text()')
+    leeches = tree.xpath('//font[@class="red"]/text()')
+    mergedTorrentResults = []
+    for x in range(0, len(torrentResults)):
+            mergedTorrentResults.append(torrentResults[x])
+            mergedTorrentResults.append(torrentResults2[x])
+    
+    for x in range(0, len(mergedTorrentResults)):
+        returnMagnet = magnetResult()
+        returnMagnet.name = mergedTorrentResults[x].strip()
+        returnMagnet.link = torrentLinks[x].strip()
+        returnMagnet.seeds = int(seeds[x])
+        returnMagnet.leechers = int(leeches[x])
+        result.append(returnMagnet)
+
     return result;
 
 #Search NyaaPantsu
 def nyaaSearch(searchString):
+    print(tcPnk+'Searching nyaa.pantsu.cat...'+tcEnd)
     #Load page
     page = requests.get('https://nyaa.pantsu.cat/search?c=_&s=0&limit=50&order=false&q='+searchString+'&s=0&sort=5&userID=0')
     tree = html.fromstring(page.content)
@@ -105,7 +139,7 @@ def nyaaSearch(searchString):
         returnMagnet.name = torrentResults[x].strip()
         returnMagnet.link = torrentLinks[x].strip()
         returnMagnet.seeds = int(seeds[x])
-        returnMagnet.leeches = int(leeches[x])
+        returnMagnet.leechers = int(leeches[x])
         result.append(returnMagnet)
 
     return result;
@@ -124,6 +158,8 @@ if(len(sys.argv)>=2):
                 conf.searchTpb = True
             elif(sys.argv[x+2]=="-nyaa"):
                 conf.searchNyaa = True
+            elif(sys.argv[x+2]=="-dem"):
+                conf.searchDemonoid = True
             elif("-max" in sys.argv[x+2]):
                 conf.maxResults = int(sys.argv[x+2].replace("-max=", ""))
             else:
@@ -134,6 +170,8 @@ if(len(sys.argv)>=2):
         searchResults.append(tpbSearch(searchString))
     if (conf.searchNyaa==True):
         searchResults.append(nyaaSearch(searchString))
+    if (conf.searchDemonoid==True):
+        searchResults.append(demonoidSearch(searchString))
 
     for x in range(0, len(searchResults)):
         for y in range(0, len(searchResults[x])):
