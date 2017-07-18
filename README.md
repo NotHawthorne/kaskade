@@ -1,6 +1,6 @@
 # kaskade
 Searches popular torrent sites and downloads to your Downloads folder.  
-![Alt text](http://i.imgur.com/MaG6zVi "Screenshot")
+![Alt text](http://i.imgur.com/MaG6zVi.png "Screenshot")
 ## Requirements
 ```
 libtorrent-rasterbar
