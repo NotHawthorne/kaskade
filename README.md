@@ -9,3 +9,11 @@ lxml2
 ```
 python kaskade.py searchterm -tpb
 ```
+## Current Args
+```
+-tpb  
+-suk  
+-nyaa
+-dem
+-max=max_results
+```
