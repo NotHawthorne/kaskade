@@ -45,9 +45,17 @@ class magnetResult(object):
 #Strip array of 0-seeder entries
 def removeNullSeeds(resultArray):
     outArray = []
+    existingMagnets = []
+    stripArray = []
+
     for x in range(0, len(resultArray)):
         if (int(resultArray[x].seeds) > 0):
-            outArray.append(resultArray[x])
+            if (resultArray[x].link.strip() in existingMagnets):
+                pass
+            else:
+                outArray.append(resultArray[x])
+                existingMagnets.append(resultArray[x].link.strip())
+
     sortArray = sorted(outArray, key=operator.attrgetter('seeds'))
     return list(reversed(sortArray))
 
@@ -80,10 +88,9 @@ def tpbSearch(searchString):
 
     for x in range(0, len(torrentResults)):
         returnMagnet = magnetResult()
-        returnMagnet.name = torrentResults[x].replace('Details for ','')
+        returnMagnet.name = (tcYlw+'[TPB]'+tcEnd)+torrentResults[x].replace('Details for ','')
         returnMagnet.link = torrentLinks[x]
         result.append(returnMagnet)
-
     curIt = 0
     for x in range(0, len(seedsLeeches)):
         if (x % 2 == 0):
@@ -113,7 +120,7 @@ def demonoidSearch(searchString):
     
     for x in range(0, len(mergedTorrentResults)):
         returnMagnet = magnetResult()
-        returnMagnet.name = mergedTorrentResults[x].strip()
+        returnMagnet.name = (tcBlu+'[DEM]'+tcEnd)+mergedTorrentResults[x].strip()
         returnMagnet.link = torrentLinks[x].strip()
         returnMagnet.seeds = int(seeds[x])
         returnMagnet.leechers = int(leeches[x])
@@ -136,7 +143,7 @@ def nyaaSearch(searchString):
     
     for x in range(0, len(torrentResults)):
         returnMagnet = magnetResult()
-        returnMagnet.name = torrentResults[x].strip()
+        returnMagnet.name = (tcPnk+'[NYA]'+tcEnd)+torrentResults[x].strip()
         returnMagnet.link = torrentLinks[x].strip()
         returnMagnet.seeds = int(seeds[x])
         returnMagnet.leechers = int(leeches[x])
