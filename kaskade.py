@@ -31,6 +31,7 @@ class searchConfig(object):
         self.searchTorrentproject = False
         self.searchZooqle = False
         self.searchNyaa = False
+        self.searchSukebei=False
         self.searchDemonoid = False
         self.maxResults = 100
 
@@ -151,6 +152,29 @@ def nyaaSearch(searchString):
 
     return result;
 
+#Search SukebeiPantsu
+def sukebeiSearch(searchString):
+    print(tcPnk+'Searching sukebei.pantsu.cat... How lewd! owo'+tcEnd)
+    #Load page
+    page = requests.get('https://sukebei.pantsu.cat/search?c=_&s=0&limit=50&order=false&q='+searchString+'&s=0&sort=5&userID=0')
+    tree = html.fromstring(page.content.decode('utf-8', 'ignore'))
+    result = []
+
+    torrentResults = tree.xpath('//td[@class="tr-name home-td"]/a/text()')
+    torrentLinks = tree.xpath('//a[@title="Magnet Link"]/@href')
+    seeds = tree.xpath('//td[@class="tr-se home-td hide-xs"]/text()')
+    leeches = tree.xpath('//td[@class="tr-le home-td hide-xs"]/text()')
+    
+    for x in range(0, len(torrentResults)):
+        returnMagnet = magnetResult()
+        returnMagnet.name = (tcPnk+'[SUK]'+tcEnd)+torrentResults[x].strip()
+        returnMagnet.link = torrentLinks[x].strip()
+        returnMagnet.seeds = int(seeds[x])
+        returnMagnet.leechers = int(leeches[x])
+        result.append(returnMagnet)
+
+    return result;
+
 #Main function
 if(len(sys.argv)>=2):
     searchString = sys.argv[1]
@@ -167,6 +191,8 @@ if(len(sys.argv)>=2):
                 conf.searchNyaa = True
             elif(sys.argv[x+2]=="-dem"):
                 conf.searchDemonoid = True
+            elif(sys.argv[x+2]=="-suk"):
+                conf.searchSukebei = True
             elif("-max" in sys.argv[x+2]):
                 conf.maxResults = int(sys.argv[x+2].replace("-max=", ""))
             else:
@@ -179,6 +205,8 @@ if(len(sys.argv)>=2):
         searchResults.append(nyaaSearch(searchString))
     if (conf.searchDemonoid==True):
         searchResults.append(demonoidSearch(searchString))
+    if (conf.searchSukebei==True):
+        searchResults.append(sukebeiSearch(searchString))
 
     for x in range(0, len(searchResults)):
         for y in range(0, len(searchResults[x])):
