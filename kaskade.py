@@ -1,5 +1,6 @@
 from lxml import html
 from subprocess import call
+import operator
 import requests
 import sys
 import libtorrent as lt
@@ -42,8 +43,8 @@ def removeNullSeeds(resultArray):
     for x in range(0, len(resultArray)):
         if (int(resultArray[x].seeds) > 0):
             outArray.append(resultArray[x])
-    #sortArray = sorted(outArray, key=lambda x: x[2])
-    return outArray
+    sortArray = sorted(outArray, key=operator.attrgetter('seeds'))
+    return list(reversed(sortArray))
 
 #Download Torrent
 def torrentDownload(magnet):
@@ -71,8 +72,6 @@ def tpbSearch(searchString):
     torrentLinks = tree.xpath('//a[@title="Download this torrent using magnet"]/@href')
     seedsLeeches = tree.xpath('//td[@align="right"]/text()')
 
-    print(len(torrentResults))
-
     for x in range(0, len(torrentResults)):
         returnMagnet = magnetResult()
         returnMagnet.name = torrentResults[x].replace('Details for ','')
@@ -82,9 +81,9 @@ def tpbSearch(searchString):
     curIt = 0
     for x in range(0, len(seedsLeeches)):
         if (x % 2 == 0):
-            result[curIt].seeds = seedsLeeches[curIt]
+            result[curIt].seeds = int(seedsLeeches[curIt])
         else:
-            result[curIt].leechers = seedsLeeches[curIt]
+            result[curIt].leechers = int(seedsLeeches[curIt])
             curIt += 1
     return result;
 
