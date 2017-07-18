@@ -79,7 +79,7 @@ def tpbSearch(searchString):
     print(tcYlw+'Searching thepiratebay.se...'+tcEnd)
     #Load page
     page = requests.get('https://thepiratebay.org/search/' + searchString + '/0/99/0')
-    tree = html.fromstring(page.content)
+    tree = html.fromstring(page.content.decode('utf-8', 'ignore'))
     result = []
 
     torrentResults = tree.xpath('//a[@class="detLink"]/@title')
@@ -105,7 +105,7 @@ def demonoidSearch(searchString):
     print(tcBlu+'Searching demonoid.pw...'+tcEnd)
     #Load page
     page = requests.get('https://www.demonoid.pw/files/?category=0&subcategory=All&quality=All&seeded=2&external=2&query='+searchString+'&uid=0&sort=S')
-    tree = html.fromstring(page.content)
+    tree = html.fromstring(page.content.decode('utf-8', 'ignore'))
     result = []
 
     torrentResults = tree.xpath('//td[@class="tone_1_pad"]/a/text()')
@@ -133,7 +133,7 @@ def nyaaSearch(searchString):
     print(tcPnk+'Searching nyaa.pantsu.cat...'+tcEnd)
     #Load page
     page = requests.get('https://nyaa.pantsu.cat/search?c=_&s=0&limit=50&order=false&q='+searchString+'&s=0&sort=5&userID=0')
-    tree = html.fromstring(page.content)
+    tree = html.fromstring(page.content.decode('utf-8', 'ignore'))
     result = []
 
     torrentResults = tree.xpath('//td[@class="tr-name home-td"]/a/text()')
