@@ -68,7 +68,7 @@ def torrentDownload(magnet):
 
 #Search ThePirateBay
 def tpbSearch(searchString):
-    print(tcYlw+'Searching ThePirateBay...'+tcEnd)
+    print(tcYlw+'Searching thepiratebay.se...'+tcEnd)
     #Load page
     page = requests.get('https://thepiratebay.org/search/' + searchString + '/0/99/0')
     tree = html.fromstring(page.content)
