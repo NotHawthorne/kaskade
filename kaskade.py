@@ -28,6 +28,7 @@ class searchConfig(object):
         self.searchTorrentproject = False
         self.searchZooqle = False
         self.searchNyaa = False
+        self.maxResults = 0
 
 #Magnet Result class
 class magnetResult(object):
@@ -123,6 +124,8 @@ if(len(sys.argv)>=2):
                 conf.searchTpb = True
             elif(sys.argv[x+2]=="-nyaa"):
                 conf.searchNyaa = True
+            elif("-max" in sys.argv[x+2]):
+                conf.maxResults = int(sys.argv[x+2].replace("-max=", ""))
             else:
                 print('Invalid argument "'+sys.argv[x+2]+'"... ignoring.')
     
@@ -137,6 +140,8 @@ if(len(sys.argv)>=2):
             outResults.append(searchResults[x][y])
 
     outResults = removeNullSeeds(outResults)
+    if (len(outResults)>conf.maxResults):
+        outResults = outResults[:conf.maxResults]
 
     for x in range(0, len(outResults)):
         outputString = tcBld+str(x)+tcEnd+') '+outResults[x].name+tcGrn+' '+str(outResults[x].seeds)+tcEnd+'|'+tcRed+str(outResults[x].leechers)+tcEnd
