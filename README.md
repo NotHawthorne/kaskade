@@ -1,5 +1,5 @@
 # ![Alt text](http://i.imgur.com/2u1zqVC.png "logo")
-Searches popular torrent sites and downloads to your Downloads folder.  
+Minimalistic command-line client that searches popular torrent sites and downloads to your Downloads folder.  
   
 ![Alt text](http://i.imgur.com/MaG6zVi.png "Screenshot")
 ## Requirements
