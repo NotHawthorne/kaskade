@@ -16,6 +16,5 @@ python kaskade.py searchterm -tpb
 -tpb  
 -suk  
 -nyaa
--dem
 -max=max_results
 ```

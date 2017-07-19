@@ -32,7 +32,6 @@ class searchConfig(object):
         self.searchZooqle = False
         self.searchNyaa = False
         self.searchSukebei=False
-        self.searchDemonoid = False
         self.maxResults = 100
 
     def allTrue(self):
@@ -49,7 +48,6 @@ class searchConfig(object):
         self.searchZooqle = True
         self.searchNyaa = True
         self.searchSukebei=True
-        self.searchDemonoid = True
 
 #Magnet Result class
 class magnetResult(object):
@@ -58,6 +56,21 @@ class magnetResult(object):
         self.link = ''
         self.seeds = 0
         self.leechers = 0
+        self.desc = ''
+        self.descLink = ''
+
+#Fetch description
+def fetchDescription(target):
+    if (target.descLink!=''):
+        originSite = target.descLink.split("/")[2]
+        if(originSite=="thepiratebay.org"):
+            page = requests.get(target.descLink)
+            tree = html.fromstring(page.content.decode('utf-8', 'ignore'))
+            target.desc = tree.xpath('//pre/text()')[0]
+        else:
+            target.desc = tcRed+"Description unavailable!"+tcEnd
+    else:
+        target.desc = tcRed+"Description unavailable!"+tcEnd
 
 #Strip array of 0-seeder entries
 def removeNullSeeds(resultArray):
@@ -100,6 +113,7 @@ def tpbSearch(searchString):
     result = []
 
     torrentResults = tree.xpath('//a[@class="detLink"]/@title')
+    descLinks = tree.xpath('//a[@class="detLink"]/@href')
     torrentLinks = tree.xpath('//a[@title="Download this torrent using magnet"]/@href')
     seedsLeeches = tree.xpath('//td[@align="right"]/text()')
 
@@ -107,6 +121,7 @@ def tpbSearch(searchString):
         returnMagnet = magnetResult()
         returnMagnet.name = (tcYlw+'[TPB]'+tcEnd)+torrentResults[x].replace('Details for ','')
         returnMagnet.link = torrentLinks[x]
+        returnMagnet.descLink = 'https://thepiratebay.org/'+descLinks[x]
         result.append(returnMagnet)
     curIt = 0
     for x in range(0, len(seedsLeeches)):
@@ -115,34 +130,6 @@ def tpbSearch(searchString):
         else:
             result[curIt].leechers = int(seedsLeeches[x])
             curIt += 1
-    return result;
-
-#Search Demonoid
-def demonoidSearch(searchString):
-    print(tcBlu+'Searching demonoid.pw...'+tcEnd)
-    #Load page
-    page = requests.get('https://www.demonoid.pw/files/?category=0&subcategory=All&quality=All&seeded=2&external=2&query='+searchString+'&uid=0&sort=S')
-    tree = html.fromstring(page.content.decode('utf-8', 'ignore'))
-    result = []
-
-    torrentResults = tree.xpath('//td[@class="tone_1_pad"]/a/text()')
-    torrentResults2 = tree.xpath('//td[@class="tone_3_pad"]/a/text()')
-    torrentLinks = tree.xpath('//a[img[@title="Download as magnet"]]/@href')
-    seeds = tree.xpath('//font[@class="green"]/text()')
-    leeches = tree.xpath('//font[@class="red"]/text()')
-    mergedTorrentResults = []
-    for x in range(0, len(torrentResults)):
-            mergedTorrentResults.append(torrentResults[x])
-            mergedTorrentResults.append(torrentResults2[x])
-    
-    for x in range(0, len(mergedTorrentResults)):
-        returnMagnet = magnetResult()
-        returnMagnet.name = (tcBlu+'[DEM]'+tcEnd)+mergedTorrentResults[x].strip()
-        returnMagnet.link = torrentLinks[x].strip()
-        returnMagnet.seeds = int(seeds[x])
-        returnMagnet.leechers = int(leeches[x])
-        result.append(returnMagnet)
-
     return result;
 
 #Search NyaaPantsu
@@ -205,8 +192,6 @@ if(len(sys.argv)>=2):
                 conf.searchTpb = True
             elif(sys.argv[x+2]=="-nyaa"):
                 conf.searchNyaa = True
-            elif(sys.argv[x+2]=="-dem"):
-                conf.searchDemonoid = True
             elif(sys.argv[x+2]=="-suk"):
                 conf.searchSukebei = True
             elif("-max" in sys.argv[x+2]):
@@ -221,8 +206,6 @@ if(len(sys.argv)>=2):
         searchResults.append(tpbSearch(searchString))
     if (conf.searchNyaa==True):
         searchResults.append(nyaaSearch(searchString))
-    if (conf.searchDemonoid==True):
-        searchResults.append(demonoidSearch(searchString))
     if (conf.searchSukebei==True):
         searchResults.append(sukebeiSearch(searchString))
 
@@ -239,7 +222,11 @@ if(len(sys.argv)>=2):
         outputString.replace("\n", "")
         print(outputString)
     torrentSelection = input('Select a torrent(0-'+str(len(outResults)-1)+'):')
-    print(tcGrn+'Downloading "'+outResults[int(torrentSelection)].name+'"...'+tcEnd)
+    print(tcGrn+'Selected "'+outResults[int(torrentSelection)].name+tcGrn+'"...'+tcEnd)
+    fetchDescription(outResults[int(torrentSelection)])
+    print(tcGrn)
+    print(outResults[int(torrentSelection)].desc)
+    input(tcEnd+'\nPress enter to download.')
     torrentDownload(outResults[int(torrentSelection)].link)
 else:
     print('invalid args!')
